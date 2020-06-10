@@ -14,6 +14,9 @@ CELL_SIZE = int(BOARD_SIZE / 9)
 # Show instructions initially
 instructions = True
 
+# The path of the song in the instructions menu
+SONG_PATH = "assets/sounds/instructions.mp3"
+
 # The color of the selected cell
 selected_cell_color = LIGHTPURPLE
 

@@ -23,6 +23,11 @@ if __name__ == "__main__":
     icon = pygame.image.load("assets/images/sudoku.png")
     pygame.display.set_icon(icon)
 
+    # Play the music
+    pygame.mixer.init()
+    pygame.mixer.music.load(SONG_PATH)
+    pygame.mixer.music.play(-1, 0.0)
+
     game = Sudoku()
 
     
@@ -38,6 +43,9 @@ if __name__ == "__main__":
         window.fill(WHITE)
 
         if instructions:
+            # Unpause the music
+            pygame.mixer.unpause()
+
             # Render the title
             title = lg_bmjapan_font.render("SudokuAI", True, BLACK)
             titleRect = title.get_rect()
@@ -73,21 +81,23 @@ if __name__ == "__main__":
             click, _, _ = pygame.mouse.get_pressed()
             if click == 1:
                 if btn_rect.collidepoint(game.mouse_pos):
+                    pygame.mixer.music.pause()
                     instructions = False
                     time.sleep(3)
 
         # If the "Play Game" button was clicked
         else:
             # Draw the outline of the board
-            board_rect = pygame.draw.rect(window, BLACK, (BOARD_POS[0], BOARD_POS[1], WIDTH - 150, HEIGHT - 150), 2)
-
+            board_rect = pygame.draw.rect(
+                window, BLACK,
+                (BOARD_POS[0], BOARD_POS[1], WIDTH - 150, HEIGHT - 150), 2
+            )
 
             # Draw the board
             for x in range(9):
                 # Draw vertical lines
                 pygame.draw.line(
-                    window,
-                    BLACK,
+                    window, BLACK,
                     (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1]),
                     (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1] + BOARD_SIZE),
                     # The 3rd, 6th and 9th lines are thicker
@@ -96,8 +106,7 @@ if __name__ == "__main__":
 
                 # Draw horizontal lines
                 pygame.draw.line(
-                    window,
-                    BLACK,
+                    window, BLACK,
                     (BOARD_POS[0], BOARD_POS[1] + (x * CELL_SIZE)),
                     (BOARD_POS[0] + BOARD_SIZE, BOARD_POS[1] + (x * CELL_SIZE)),
                     # The 3rd, 6th and 9th lines are thicker
