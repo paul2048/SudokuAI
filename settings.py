@@ -6,12 +6,15 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 LIGHTPURPLE = (130, 130, 178)
 
+# Board position and size
+BOARD_POS = (75, 100)
+BOARD_SIZE = WIDTH - BOARD_POS[0] * 2
+CELL_SIZE = int(BOARD_SIZE / 9)
+
+# Show instructions initially
+instructions = True
+
+# The color of the selected cell
+selected_cell_color = LIGHTPURPLE
+
 test_board = [[0 for x in range(9)] for x in range(9)]
-
-board_pos = (
-    75, #(WIDTH - (HEIGHT - (PADDING + MARGIN_TOP + PADDING))) / 2,
-    100 #MARGIN_TOP + PADDING
-)
-
-board_size = WIDTH - board_pos[0] * 2
-cell_size = int(board_size / 9)
