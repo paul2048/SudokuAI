@@ -19,4 +19,4 @@ SONG_PATH = None  # "assets/sounds/instructions.mp3"
 # The color of the selected cell
 selected_cell_color = LIGHTPURPLE
 
-test_board = [[0 for x in range(9)] for x in range(9)]
+test_board = [[y for y in range(9)] for x in range(9)]

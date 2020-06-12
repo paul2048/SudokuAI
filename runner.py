@@ -16,6 +16,7 @@ def main():
     lg_bmjapan_font = pygame.font.Font(BMJAPAN, 42)
     md_bmjapan_font = pygame.font.Font(BMJAPAN, 32)
     regular_font = pygame.font.SysFont("Arial", 24)
+    nums_font = pygame.font.SysFont("Arial", 24)
 
     # Set window title and window icon
     pygame.display.set_caption("SudokuAI")
@@ -177,6 +178,9 @@ def main():
                         CELL_SIZE - 1
                     )
                 )
+
+            # Draw the numbers on the board
+            game.draw_nums(window, nums_font)
 
         # Update the window with everything that was drawn
         pygame.display.update()
