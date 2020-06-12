@@ -11,52 +11,6 @@ class Sudoku():
         self.selected_cell = None
         self.mouse_pos = None
 
-    # def run(self):
-    #     """
-    #     This will be the first called method after the `runner.py` was executed.
-    #     While the program is running:
-    #         - check if events took place (e.g: clicks)
-    #         - get the position of the mouse
-    #         ...
-    #     """
-
-
-    # def events(self):
-    #     """
-
-    #     """
-
-    
-    # def update(self):
-    #     """
-
-    #     """
-
-
-    # def draw(self):
-    #     """
-        
-    #     """
-
-
-    # def draw_board(self, window):
-    #     """
-    #     This method will draw the board; first the vertical lines,
-    #     then the horizontal lines. Each pair of 9 cells will be
-    #     contained within thicker lines.
-    #     """
-
-    #     # Draw the outline of the board
-    #     # pygame.draw.rect(window, BLACK, (BOARD_POS[0], BOARD_POS[1], WIDTH - 150, HEIGHT - 150), 2)
-
-
-    # def draw_selection(self, window, pos):
-    #     """
-    #     This function draws a rectancle on a cell of the board.
-    #     It has the purpose of highlighting the selected cell.
-    #     """
-    
-
     def get_cell(self, board_rect):
         """
         If the mouse was clicked outside the board, the method returns
