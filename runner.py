@@ -168,30 +168,40 @@ def main():
             draw_nums(window, game, nums_font)
 
             # Draw the vertical and horizontal lines of the boards
-            for x in range(9):
-                # Draw vertical lines
-                pygame.draw.line(
-                    window, BLACK,
-                    (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1]),
-                    (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1] + BOARD_SIZE),
-                    # The 3rd, 6th and 9th lines are thicker
-                    1 if x % 3 != 0 else 2
-                )
-
-                # Draw horizontal lines
-                pygame.draw.line(
-                    window, BLACK,
-                    (BOARD_POS[0], BOARD_POS[1] + (x * CELL_SIZE)),
-                    (BOARD_POS[0] + BOARD_SIZE, BOARD_POS[1] + (x * CELL_SIZE)),
-                    # The 3rd, 6th and 9th lines are thicker
-                    1 if x % 3 != 0 else 2
-                )
+            draw_vh_lines(window)
 
             # Pause the music
             pygame.mixer.music.pause()
 
         # Update the window with everything that was drawn
         pygame.display.update()
+
+
+def draw_vh_lines(window):
+    """
+    This functionDraws the vertical and horizontal lines of the sudoku board.
+    """
+
+    for x in range(9):
+        # Draw vertical lines
+        pygame.draw.line(
+            window, BLACK,
+            (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1]),
+            (BOARD_POS[0] + (x * CELL_SIZE),
+             BOARD_POS[1] + BOARD_SIZE),
+            # The 3rd, 6th and 9th lines are thicker
+            1 if x % 3 != 0 else 2
+        )
+
+        # Draw horizontal lines
+        pygame.draw.line(
+            window, BLACK,
+            (BOARD_POS[0], BOARD_POS[1] + (x * CELL_SIZE)),
+            (BOARD_POS[0] + BOARD_SIZE,
+             BOARD_POS[1] + (x * CELL_SIZE)),
+            # The 3rd, 6th and 9th lines are thicker
+            1 if x % 3 != 0 else 2
+        )
 
 
 def draw_btn(window, pos, size, btn_color, text, text_color, font):
@@ -214,6 +224,7 @@ def draw_btn(window, pos, size, btn_color, text, text_color, font):
     window.blit(styled_text, styled_text_rect)
 
     return btn_rect
+
 
 def draw_nums(window, game, font):
     """
@@ -248,6 +259,15 @@ def draw_nums(window, game, font):
 
                 # Draw the number
                 window.blit(styled_text, styled_text_rect)
+    
+    # Fixes the overlaping of the initial cells on the board's outline
+    pygame.draw.rect(
+        window, BLACK,
+        (
+            BOARD_POS[0], BOARD_POS[1],
+            WIDTH - BOARD_POS[0] * 2, HEIGHT - BOARD_POS[0] * 2
+        ), 2
+    )
 
 
 if __name__ == "__main__":
