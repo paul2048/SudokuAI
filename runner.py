@@ -34,21 +34,32 @@ def main():
 
     game = Sudoku()
 
-
     while True:
-        for event in pygame.event.get():
-            # Check if game quit
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                game.mouse_pos = pygame.mouse.get_pos()
-
         window.fill(WHITE)
 
         if instructions:
-            # Unpause the music
-            pygame.mixer.music.unpause()
+            for event in pygame.event.get():
+                # Check if game quit
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            # Play game button
+            play_btn = draw_btn(
+                window,
+                (WIDTH / 4, (3 / 4) * HEIGHT),
+                (WIDTH / 2, 50),
+                BLACK, "Play Game", WHITE,
+                md_bmjapan_font
+            )
+
+            # Check if play button was clicked
+            click, _, _ = pygame.mouse.get_pressed()
+            if click == 1:
+                game.mouse_pos = pygame.mouse.get_pos()
+                if play_btn.collidepoint(game.mouse_pos):
+                    instructions = False
+                    time.sleep(.3)
 
             # Render the title
             title = lg_bmjapan_font.render("SudokuAI", True, BLACK)
@@ -72,27 +83,34 @@ def main():
                     rule_rect = rule_seg.get_rect()
                     rule_rect.center = (WIDTH / 2, 125 + (i * 60) + (j * 25))
                     window.blit(rule_seg, rule_rect)
-            
-            # Play game button
-            play_btn = draw_btn(
-                window,
-                (WIDTH / 4, (3 / 4) * HEIGHT),
-                (WIDTH / 2, 50),
-                BLACK, "Play Game", WHITE,
-                md_bmjapan_font
-            )
 
-            # Check if play button was clicked
-            click, _, _ = pygame.mouse.get_pressed()
-            if click == 1:
-                if play_btn.collidepoint(game.mouse_pos):
-                    instructions = False
-                    time.sleep(.3)
+            # Unpause the music
+            pygame.mixer.music.unpause()
 
         # If the "Play Game" button was clicked
         else:
-            # Pause the music
-            pygame.mixer.music.pause()
+            # Draw the outline of the board
+            board_rect = pygame.draw.rect(
+                window, BLACK,
+                (
+                    BOARD_POS[0], BOARD_POS[1],
+                    WIDTH - BOARD_POS[0] * 2, HEIGHT - BOARD_POS[0] * 2
+                ), 2
+            )
+
+            # If a cell was selected (clicked), highlight the cell
+            selected_cell = game.selected_cell
+            if selected_cell:
+                # Draw a rectancle on the selected cell
+                pygame.draw.rect(
+                    window,
+                    SELECTED_CELL_COLOR,
+                    (
+                        selected_cell[0] * CELL_SIZE + BOARD_POS[0],
+                        selected_cell[1] * CELL_SIZE + BOARD_POS[1],
+                        CELL_SIZE, CELL_SIZE
+                    )
+                )
 
             # Exit game button
             exit_btn = draw_btn(
@@ -112,25 +130,44 @@ def main():
                 regular_font
             )
 
-            # New level button
+            # New game button
             new_btn = draw_btn(
                 window,
                 (BOARD_POS[0] + BOARD_SIZE / 1.5 + 15, (BOARD_POS[1] - 50) / 2),
                 (WIDTH / 5, 50),
-                RED, "New level", WHITE,
+                RED, "New game", WHITE,
                 regular_font
             )
 
-            # Draw the outline of the board
-            board_rect = pygame.draw.rect(
-                window, BLACK,
-                (
-                    BOARD_POS[0], BOARD_POS[1],
-                    WIDTH - BOARD_POS[0] * 2, HEIGHT - BOARD_POS[0] * 2
-                ), 2
-            )
+            click, _, _ = pygame.mouse.get_pressed()
+            if click == 1:
+                game.mouse_pos = pygame.mouse.get_pos()
 
-            # Draw the board
+                # Check if exit button was clicked
+                if exit_btn.collidepoint(game.mouse_pos):
+                    instructions = True
+                    time.sleep(.3)
+
+                # Check if a cell or the left/right/bottom margin
+                # (used for deselecting a cell) was clicked
+                notop_rect = pygame.Rect(0, BOARD_POS[1], WIDTH, HEIGHT)
+                if notop_rect.collidepoint(game.mouse_pos):
+                    game.selected_cell = game.get_cell(board_rect)
+
+            for event in pygame.event.get():
+                # Check if game quit
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                # Check for key press events
+                if event.type == pygame.KEYDOWN:
+                    # Insert the key on the board if it's a number
+                    game.insert_num(window, board_rect, event.unicode)
+
+            # Draw the numbers on the board
+            draw_nums(window, game, nums_font)
+
+            # Draw the vertical and horizontal lines of the boards
             for x in range(9):
                 # Draw vertical lines
                 pygame.draw.line(
@@ -149,38 +186,9 @@ def main():
                     # The 3rd, 6th and 9th lines are thicker
                     1 if x % 3 != 0 else 2
                 )
-            
-            # Check for mouse click events
-            click, _, _ = pygame.mouse.get_pressed()
-            if click == 1:
-                # Check if exit button was clicked
-                if exit_btn.collidepoint(game.mouse_pos):
-                    instructions = True
-                    time.sleep(.3)
 
-                # Check if a cell or the left/right/bottom margin
-                # (used for deselecting a cell) was clicked
-                notop_rect = pygame.Rect(0, BOARD_POS[1], WIDTH, HEIGHT)
-                if notop_rect.collidepoint(game.mouse_pos):
-                    game.selected_cell = game.get_cell(board_rect)
-
-            # If a cell was selected (clicked), highlight the cell
-            selected_cell = game.selected_cell
-            if selected_cell:
-                # Draw a rectancle on the selected cell
-                pygame.draw.rect(
-                    window,
-                    selected_cell_color,
-                    (
-                        selected_cell[0] * CELL_SIZE + BOARD_POS[0] + 1,
-                        selected_cell[1] * CELL_SIZE + BOARD_POS[1] + 1,
-                        CELL_SIZE - 1,
-                        CELL_SIZE - 1
-                    )
-                )
-
-            # Draw the numbers on the board
-            game.draw_nums(window, nums_font)
+            # Pause the music
+            pygame.mixer.music.pause()
 
         # Update the window with everything that was drawn
         pygame.display.update()
@@ -206,6 +214,40 @@ def draw_btn(window, pos, size, btn_color, text, text_color, font):
     window.blit(styled_text, styled_text_rect)
 
     return btn_rect
+
+def draw_nums(window, game, font):
+    """
+    This function draws each number of the current board into the
+    `window`. `board` is a 2D list that contains the rows of the board.
+    Each row contains numbers from 0 to 9, 0 meaning that the
+    corresponding cell is empty.
+    """
+
+    # Iterate through the rows
+    for i, row in enumerate(game.board):
+        # Iterate through each number of the row
+        for j, num in enumerate(row):
+            curr_num = str(game.board[i][j])
+
+            if curr_num != "0":
+                # The background of the cell
+                cell_rect = pygame.Rect(
+                    i * CELL_SIZE + BOARD_POS[0],
+                    j * CELL_SIZE + BOARD_POS[1],
+                    CELL_SIZE, CELL_SIZE
+                )
+
+                # Render the font and center the number inside `cell_rect`
+                styled_text = font.render(curr_num, True, BLACK)
+                styled_text_rect = styled_text.get_rect()
+                styled_text_rect.center = cell_rect.center
+
+                # Draw the background if the cell is an initial cell
+                if game.initial_board[i][j] != 0:
+                    pygame.draw.rect(window, INITIAL_CELL_COLOR, cell_rect)
+
+                # Draw the number
+                window.blit(styled_text, styled_text_rect)
 
 
 if __name__ == "__main__":
