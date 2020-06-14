@@ -106,8 +106,8 @@ def main():
                     window,
                     SELECTED_CELL_COLOR,
                     (
-                        selected_cell[0] * CELL_SIZE + BOARD_POS[0],
-                        selected_cell[1] * CELL_SIZE + BOARD_POS[1],
+                        selected_cell[1] * CELL_SIZE + BOARD_POS[0],
+                        selected_cell[0] * CELL_SIZE + BOARD_POS[1],
                         CELL_SIZE, CELL_SIZE
                     )
                 )
@@ -243,8 +243,8 @@ def draw_nums(window, game, font):
             if curr_num != "0":
                 # The background of the cell
                 cell_rect = pygame.Rect(
-                    i * CELL_SIZE + BOARD_POS[0],
-                    j * CELL_SIZE + BOARD_POS[1],
+                    j * CELL_SIZE + BOARD_POS[0],
+                    i * CELL_SIZE + BOARD_POS[1],
                     CELL_SIZE, CELL_SIZE
                 )
 
@@ -259,7 +259,7 @@ def draw_nums(window, game, font):
 
                 # Draw the number
                 window.blit(styled_text, styled_text_rect)
-    
+
     # Fixes the overlaping of the initial cells on the board's outline
     pygame.draw.rect(
         window, BLACK,
