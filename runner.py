@@ -2,7 +2,7 @@ import pygame
 import sys
 import time
 
-from sudoku import Sudoku
+from sudoku import Sudoku, SudokuAI
 from settings import *
 
 
@@ -33,6 +33,11 @@ def main():
     instructions = True
 
     game = Sudoku()
+    ai = SudokuAI(game.board)
+
+    for x in ai.knowledge:
+        print(x)
+
 
     while True:
         window.fill(WHITE)
@@ -59,7 +64,7 @@ def main():
                 game.mouse_pos = pygame.mouse.get_pos()
                 if play_btn.collidepoint(game.mouse_pos):
                     instructions = False
-                    time.sleep(.3)
+                    # time.sleep(.3)
 
             # Render the title
             title = lg_bmjapan_font.render("SudokuAI", True, BLACK)
@@ -146,7 +151,13 @@ def main():
                 # Check if exit button was clicked
                 if exit_btn.collidepoint(game.mouse_pos):
                     instructions = True
-                    time.sleep(.3)
+                    # time.sleep(.3)
+                # Check if the "AI move" button was clicked
+                elif ai_btn.collidepoint(game.mouse_pos):
+                    pass
+                # Check if the "New game" button was clicked
+                elif new_btn.collidepoint(game.mouse_pos):
+                    game.board = game.new_board()
 
                 # Check if a cell or the left/right/bottom margin
                 # (used for deselecting a cell) was clicked
@@ -163,6 +174,8 @@ def main():
                 if event.type == pygame.KEYDOWN:
                     # Insert the key on the board if it's a number
                     game.insert_num(window, board_rect, event.unicode)
+                    # Update the AI knowledge
+                    ###########
 
             # Draw the numbers on the board
             draw_nums(window, game, nums_font)
@@ -238,9 +251,9 @@ def draw_nums(window, game, font):
     for i, row in enumerate(game.board):
         # Iterate through each number of the row
         for j, num in enumerate(row):
-            curr_num = str(game.board[i][j])
+            curr_num = game.board[i][j]
 
-            if curr_num != "0":
+            if curr_num != 0:
                 # The background of the cell
                 cell_rect = pygame.Rect(
                     j * CELL_SIZE + BOARD_POS[0],
@@ -249,7 +262,7 @@ def draw_nums(window, game, font):
                 )
 
                 # Render the font and center the number inside `cell_rect`
-                styled_text = font.render(curr_num, True, BLACK)
+                styled_text = font.render(str(curr_num), True, BLACK)
                 styled_text_rect = styled_text.get_rect()
                 styled_text_rect.center = cell_rect.center
 
