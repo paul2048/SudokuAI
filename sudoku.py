@@ -1,4 +1,5 @@
 import copy
+import random
 
 from settings import *
 
@@ -141,7 +142,7 @@ class SudokuAI():
 
     def row_cells(self, cell):
         """
-        Returns a set of the numbers in the row where `cell` is
+        Returns a set of the numbers of the row where `cell` is
         """
 
         i = cell[0]
@@ -149,7 +150,7 @@ class SudokuAI():
 
     def col_cells(self, cell):
         """
-        Returns a set of the numbers in the column where `cell` is
+        Returns a set of the numbers of the column where `cell` is
         """
 
         j = cell[1]
@@ -157,8 +158,10 @@ class SudokuAI():
 
     def possible_nums(self, cell):
         """
+        Returns a set of possible numbers that can be inserted in `cell`
         """
 
+        # A set of the numbers that can't be inserted in `cell`
         not_available_nums = self.reg_cells(cell).union(
             self.row_cells(cell).union(
                 self.col_cells(cell)
@@ -176,14 +179,18 @@ class SudokuAI():
 
         return None
 
-    def make_safe_move(self):
+    def make_move(self):
         """
         """
 
-        return None
+        safe_moves = [
+            sentence for sentence in self.knowledge
+            if len(sentence.nums) == 1
+        ]
 
-    def make_random_move(self):
-        """
-        """
-
-        return None
+        if safe_moves:
+            s = random.choice(safe_moves)
+            i, j = s.cell
+            self.board[i][j] = s.nums.pop()
+        else:
+            False

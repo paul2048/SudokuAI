@@ -64,7 +64,7 @@ def main():
                 game.mouse_pos = pygame.mouse.get_pos()
                 if play_btn.collidepoint(game.mouse_pos):
                     instructions = False
-                    # time.sleep(.3)
+                    time.sleep(.3)
 
             # Render the title
             title = lg_bmjapan_font.render("SudokuAI", True, BLACK)
@@ -151,10 +151,11 @@ def main():
                 # Check if exit button was clicked
                 if exit_btn.collidepoint(game.mouse_pos):
                     instructions = True
-                    # time.sleep(.3)
+                    time.sleep(.3)
                 # Check if the "AI move" button was clicked
                 elif ai_btn.collidepoint(game.mouse_pos):
-                    pass
+                    ai.make_move()
+                    time.sleep(.3)
                 # Check if the "New game" button was clicked
                 elif new_btn.collidepoint(game.mouse_pos):
                     game.board = game.new_board()
