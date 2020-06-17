@@ -129,7 +129,14 @@ class SudokuAI():
         """
 
         i, j = cell
-        region = [row[(j//3)*3:(j//3)*3+3] for row in self.board[(i//3)*3:(i//3)*3+3]]
+        # The position of the first cell of the region where `cell` is
+        ri, rj = ((i // 3) * 3, (j // 3) * 3)
+        region = [
+            row[rj:rj+3]
+            for row in self.board[ri:ri+3]
+        ]
+
+        # Flatten the 2D `region` list
         return set(sum(region, []))
 
     def row_cells(self, cell):
