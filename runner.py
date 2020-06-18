@@ -35,9 +35,6 @@ def main():
     game = Sudoku()
     ai = SudokuAI(game.board)
 
-    # for x in ai.knowledge:
-    #     print(x)
-
 
     while True:
         window.fill(WHITE)
@@ -158,12 +155,16 @@ def main():
                     cell = ai.make_move()
                     # If a move was made
                     if cell:
-                        # Select the cell that the AI chose
-                        game.selected_cell = cell
-                        game.mouse_pos = (
-                            BOARD_POS[0] + cell[1] * CELL_SIZE,
-                            BOARD_POS[1] + cell[0] * CELL_SIZE
-                        )
+                        for x in ai.knowledge:
+                            print(f"{x}: {ai.knowledge[x]}")
+                        # If the game is not won, mark the cell of the inserted number
+                        if not game.is_win():
+                            # Select the cell that the AI chose
+                            game.selected_cell = cell
+                            game.mouse_pos = (
+                                BOARD_POS[0] + cell[1] * CELL_SIZE,
+                                BOARD_POS[1] + cell[0] * CELL_SIZE
+                            )
                     time.sleep(.2)
                 # Check if the "New game" button was clicked
                 elif new_btn.collidepoint(game.mouse_pos):
@@ -211,8 +212,7 @@ def draw_vh_lines(window):
         pygame.draw.line(
             window, BLACK,
             (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1]),
-            (BOARD_POS[0] + (x * CELL_SIZE),
-             BOARD_POS[1] + BOARD_SIZE),
+            (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1] + BOARD_SIZE),
             # The 3rd, 6th and 9th lines are thicker
             1 if x % 3 != 0 else 2
         )
@@ -221,8 +221,7 @@ def draw_vh_lines(window):
         pygame.draw.line(
             window, BLACK,
             (BOARD_POS[0], BOARD_POS[1] + (x * CELL_SIZE)),
-            (BOARD_POS[0] + BOARD_SIZE,
-             BOARD_POS[1] + (x * CELL_SIZE)),
+            (BOARD_POS[0] + BOARD_SIZE, BOARD_POS[1] + (x * CELL_SIZE)),
             # The 3rd, 6th and 9th lines are thicker
             1 if x % 3 != 0 else 2
         )

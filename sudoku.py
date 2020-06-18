@@ -47,14 +47,14 @@ class Sudoku():
         """
 
         # Get the click cell position (e.g: `(8, 8)` is the last cell)
-        x, y = self.get_cell(board_rect)
+        i, j = self.get_cell(board_rect)
 
-        # Check if the `(x, y)` is a valid board position
-        if self.initial_board[x][y] == 0:
+        # Check if the `(i, j)` is a valid board position
+        if self.initial_board[i][j] == 0:
             # If the key is a number, add it to the board
             try:
                 int(key)
-                self.board[x][y] = int(key)
+                self.board[i][j] = int(key)
                 # Check for a win
                 self.is_win()
             except:
@@ -93,10 +93,12 @@ class SudokuAI():
         self.knowledge = {}
         # When a SudokuAI object is created, initial knowledge
         # will be created
-        self.add_initial_knowledge()
+        self.update_knowledge()
 
-    def add_initial_knowledge(self):
+    def update_knowledge(self):
         """
+        Updates the knowledge of 1 or more cells by reducing the number
+        of valid numbers that can be inserted in the specfic cell. 
         """
 
         # Iterate through the rows of the board
@@ -130,9 +132,7 @@ class SudokuAI():
         """
 
         i = cell[0]
-        row = set(self.board[i])
-        row.remove(0)
-        return row
+        return set(self.board[i])
 
     def col_nums(self, cell):
         """
@@ -140,9 +140,7 @@ class SudokuAI():
         """
 
         j = cell[1]
-        col = set(row[j] for row in self.board)
-        col.remove(0)
-        return col
+        return set(row[j] for row in self.board)
 
     def possible_nums(self, cell):
         """
@@ -156,14 +154,10 @@ class SudokuAI():
             )
         )
 
+        not_available_nums.remove(0)
+
         return set(range(1, 10)).difference(not_available_nums)
 
-
-    def update_knowledge(self):
-        """
-        """
-
-        self.add_initial_knowledge()
 
     def make_move(self):
         """
@@ -176,12 +170,8 @@ class SudokuAI():
         ]
 
         if safe_moves:
-            rand_cell = random.choice(safe_moves)
-            i, j = rand_cell
+            rand_cell = i, j = random.choice(safe_moves)
             self.board[i][j] = self.knowledge[rand_cell].pop()
-            # print(rand_cell)
-            # print(self.board[i][j])
-            # print(self.knowledge[rand_cell])
             self.update_knowledge()
             return rand_cell
         else:
