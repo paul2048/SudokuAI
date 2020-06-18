@@ -35,8 +35,8 @@ def main():
     game = Sudoku()
     ai = SudokuAI(game.board)
 
-    for x in ai.knowledge:
-        print(x)
+    # for x in ai.knowledge:
+    #     print(x)
 
 
     while True:
@@ -151,14 +151,24 @@ def main():
                 # Check if exit button was clicked
                 if exit_btn.collidepoint(game.mouse_pos):
                     instructions = True
-                    time.sleep(.3)
+                    time.sleep(.2)
                 # Check if the "AI move" button was clicked
                 elif ai_btn.collidepoint(game.mouse_pos):
-                    ai.make_move()
-                    time.sleep(.3)
+                    # Make a move and store the cell where the number was inserted
+                    cell = ai.make_move()
+                    # If a move was made
+                    if cell:
+                        # Select the cell that the AI chose
+                        game.selected_cell = cell
+                        game.mouse_pos = (
+                            BOARD_POS[0] + cell[1] * CELL_SIZE,
+                            BOARD_POS[1] + cell[0] * CELL_SIZE
+                        )
+                    time.sleep(.2)
                 # Check if the "New game" button was clicked
                 elif new_btn.collidepoint(game.mouse_pos):
                     game.board = game.new_board()
+                    ai = SudokuAI(game.board)
 
                 # Check if a cell or the left/right/bottom margin
                 # (used for deselecting a cell) was clicked
@@ -176,7 +186,7 @@ def main():
                     # Insert the key on the board if it's a number
                     game.insert_num(window, board_rect, event.unicode)
                     # Update the AI knowledge
-                    ###########
+                    ai.update_knowledge()
 
             # Draw the numbers on the board
             draw_nums(window, game, nums_font)

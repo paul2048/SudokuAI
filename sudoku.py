@@ -79,21 +79,6 @@ class Sudoku():
         self.initial_board = self.board
         return True
 
-class Sentence():
-    """
-    Logical statement about a sudoku game. A sentance consists of
-    a cell and a set of possible numbers in that cell.
-    """
-
-    def __init__(self, cell, nums):
-        self.cell = cell
-        self.nums = nums
-
-    def __eq__(self, other):
-        return self.cell == other.cell and self.nums == other.nums
-
-    def __str__(self):
-        return f"{self.cell}: {self.nums}"
 
 class SudokuAI():
     """
@@ -103,13 +88,16 @@ class SudokuAI():
     def __init__(self, board):
 
         self.board = board
-        # List of sentences about the cells known to be true
-        self.knowledge = self.add_initial_knowledge()
+        # A dictionary that has pairs of a cell mapping to a set of
+        # possible numbers in that cell (e.g: `(1, 4): {1, 2, 9}`)
+        self.knowledge = {}
+        # When a SudokuAI object is created, initial knowledge
+        # will be created
+        self.add_initial_knowledge()
 
     def add_initial_knowledge(self):
         """
         """
-        knowledge = []
 
         # Iterate through the rows of the board
         for i, row in enumerate(self.board):
@@ -118,13 +106,9 @@ class SudokuAI():
                 # Add knowledge only to the empty cells
                 if self.board[i][j] == 0:
                     cell = (i, j)
-                    sentence = Sentence(cell, self.possible_nums(cell))
-                    knowledge.append(sentence)
+                    self.knowledge[cell] = self.possible_nums(cell)
 
-        return knowledge
-
-
-    def reg_cells(self, cell):
+    def reg_nums(self, cell):
         """
         Returns a set of the numbers in the region where `cell` is
         """
@@ -140,21 +124,25 @@ class SudokuAI():
         # Flatten the 2D `region` list
         return set(sum(region, []))
 
-    def row_cells(self, cell):
+    def row_nums(self, cell):
         """
         Returns a set of the numbers of the row where `cell` is
         """
 
         i = cell[0]
-        return set(self.board[i])
+        row = set(self.board[i])
+        row.remove(0)
+        return row
 
-    def col_cells(self, cell):
+    def col_nums(self, cell):
         """
         Returns a set of the numbers of the column where `cell` is
         """
 
         j = cell[1]
-        return set(row[j] for row in self.board)
+        col = set(row[j] for row in self.board)
+        col.remove(0)
+        return col
 
     def possible_nums(self, cell):
         """
@@ -162,13 +150,11 @@ class SudokuAI():
         """
 
         # A set of the numbers that can't be inserted in `cell`
-        not_available_nums = self.reg_cells(cell).union(
-            self.row_cells(cell).union(
-                self.col_cells(cell)
+        not_available_nums = self.reg_nums(cell).union(
+            self.row_nums(cell).union(
+                self.col_nums(cell)
             )
         )
-
-        not_available_nums.remove(0)
 
         return set(range(1, 10)).difference(not_available_nums)
 
@@ -177,20 +163,27 @@ class SudokuAI():
         """
         """
 
-        return None
+        self.add_initial_knowledge()
 
     def make_move(self):
         """
         """
 
+        # The cells that have only only possible number
         safe_moves = [
-            sentence for sentence in self.knowledge
-            if len(sentence.nums) == 1
+            cell for cell in self.knowledge
+            if len(self.knowledge[cell]) == 1
         ]
 
         if safe_moves:
-            s = random.choice(safe_moves)
-            i, j = s.cell
-            self.board[i][j] = s.nums.pop()
+            rand_cell = random.choice(safe_moves)
+            i, j = rand_cell
+            self.board[i][j] = self.knowledge[rand_cell].pop()
+            # print(rand_cell)
+            # print(self.board[i][j])
+            # print(self.knowledge[rand_cell])
+            self.update_knowledge()
+            return rand_cell
         else:
-            False
+            pass
+        
