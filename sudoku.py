@@ -63,7 +63,7 @@ class Sudoku():
     def is_win(self):
         """
         This method checks if the current state of the board represents
-        a win.
+        a win. If it's a win, "lock" the board
         """
 
         # Iterate through each row of the board
@@ -95,85 +95,208 @@ class SudokuAI():
         # will be created
         self.update_knowledge()
 
-    def update_knowledge(self):
+    def update_knowledge(self, board=[], knowledge=[]):
         """
-        Updates the knowledge of 1 or more cells by reducing the number
-        of valid numbers that can be inserted in the specfic cell. 
+        Updates the knowledge of 1 or more cells by reducing the number of
+        valid numbers that can be inserted in the specfic cell.
+        The optional arguments `board` and `knowledge` are used when the
+        live board and knowledge musn't be updated (used while backtracking). 
         """
 
+        board = board if board else self.board
+        knowledge = knowledge if knowledge else self.knowledge
+
         # Iterate through the rows of the board
-        for i, row in enumerate(self.board):
+        for i, row in enumerate(board):
             # Iterate through each number of the row
             for j, num in enumerate(row):
                 # Add knowledge only to the empty cells
-                if self.board[i][j] == 0:
+                if board[i][j] == 0:
                     cell = (i, j)
-                    self.knowledge[cell] = self.possible_nums(cell)
+                    knowledge[cell] = self.possible_nums(cell, board)
 
-    def reg_nums(self, cell):
-        """
-        Returns a set of the numbers in the region where `cell` is
-        """
-
-        i, j = cell
-        # The position of the first cell of the region where `cell` is
-        ri, rj = ((i // 3) * 3, (j // 3) * 3)
-        region = [
-            row[rj:rj+3]
-            for row in self.board[ri:ri+3]
-        ]
-
-        # Flatten the 2D `region` list
-        return set(sum(region, []))
-
-    def row_nums(self, cell):
-        """
-        Returns a set of the numbers of the row where `cell` is
-        """
-
-        i = cell[0]
-        return set(self.board[i])
-
-    def col_nums(self, cell):
-        """
-        Returns a set of the numbers of the column where `cell` is
-        """
-
-        j = cell[1]
-        return set(row[j] for row in self.board)
-
-    def possible_nums(self, cell):
+    def possible_nums(self, cell, board):
         """
         Returns a set of possible numbers that can be inserted in `cell`
         """
 
-        # A set of the numbers that can't be inserted in `cell`
-        not_available_nums = self.reg_nums(cell).union(
-            self.row_nums(cell).union(
-                self.col_nums(cell)
-            )
+        i, j = cell
+        # A set of the numbers in the row where `cell` is
+        row = set(board[i])
+        # A set of the numbers in the column where `cell` is
+        col = set(row[j] for row in board)
+        # The position of the first cell of the region where `cell` is
+        ri, rj = ((i // 3) * 3, (j // 3) * 3)
+        # A set of the numbers in the region where `cell` is
+        reg = set(
+            num for row in board[ri:ri+3]
+            for num in row[rj:rj+3]
         )
 
+        # A set of the numbers that can't be inserted in `cell`
+        not_available_nums = row.union(col.union(reg))
         not_available_nums.remove(0)
 
         return set(range(1, 10)).difference(not_available_nums)
 
+    def is_win(self, board):
+        """
+        This method checks if the current state of the board represents
+        a win.
+        """
+
+        # Iterate through each row of the board
+        for i, row in enumerate(board):
+            # The `i`-th column
+            col = [row2[i] for row2 in board]
+
+            # Check if the `i`-th row and column are valid
+            if not (set(row) == set(col) == set(range(1, 10))):
+                return False
+
+        return True
+
+    def is_board_valid(self, board):
+        """
+        """
+
+        # Iterate through each row of the board
+        for i, row in enumerate(board):
+            # The numbers of the i-th row (without 0s)
+            row = [num for num in row if num]
+            # The numbers of the i-th column (without 0s)
+            col = [row2[i] for row2 in board if row2[i]]
+            # The numbers of the i-th region (without 0s)
+            ri, rj = (i * 3, (i // 3) * 3)
+            reg = [
+                num for row2 in self.board[ri:ri+3]
+                for num in row2[rj:rj+3] if num
+            ]
+
+            # If a number was repeated in a row, column or region
+            if len(row) != len(set(row)) or \
+               len(col) != len(set(col)) or \
+               len(reg) != len(set(reg)):
+                return False
+
+        return True
 
     def make_move(self):
         """
         """
 
-        # The cells that have only only possible number
+        # The cells that have only 1 possible number
         safe_moves = [
             cell for cell in self.knowledge
             if len(self.knowledge[cell]) == 1
         ]
 
+        # If 1 or more safe moves are available
         if safe_moves:
-            rand_cell = i, j = random.choice(safe_moves)
-            self.board[i][j] = self.knowledge[rand_cell].pop()
+            print("Normal move, bro........")
+            # Make a random safe move
+            safe_cell = i, j = random.choice(safe_moves)
+            self.board[i][j] = self.knowledge[safe_cell].pop()
             self.update_knowledge()
-            return rand_cell
+            return safe_cell
+        # If no safe moves are available
         else:
-            pass
+            print("RISKY MOVE!!!!!!!!!!!!!")
+            # Get the cells with the smallest amount of possible numbers
+            # that a cell on the current board can have
+            min_num = min(
+                len(nums) for nums in self.knowledge.values()
+                if len(nums)
+            )
+            best_moves = [
+                cell for cell in self.knowledge
+                if len(self.knowledge[cell]) == min_num
+            ]
+
+
+            rand_cell = i, j = random.choice(best_moves)
+            assignment = [{
+                "board": copy.deepcopy(self.board),
+                "knowledge": copy.deepcopy(self.knowledge)
+            }]
+
+            return self.backtrack(assignment, rand_cell)
+
+    def backtrack(self, assignment, first_rand_cell):
+        """
+        """
+
+        board = assignment[-1]["board"]
+        knowledge = assignment[-1]["knowledge"]
+
+        if self.is_win(board):
+            i, j = first_rand_cell
+            self.board[i][j] = self.knowledge[first_rand_cell].pop()
+            self.knowledge[first_rand_cell] = set()
+            self.update_knowledge()
+            return first_rand_cell
+
+        safe_moves = [
+            cell for cell in knowledge
+            if len(knowledge[cell]) == 1
+        ]
+
+        while safe_moves:
+            if self.is_board_valid(board):
+                safe_cell = i, j = random.choice(safe_moves)
+                board[i][j] = knowledge[safe_cell].pop()
+                self.update_knowledge(board, knowledge)
+                safe_moves = [
+                    cell for cell in knowledge
+                    if len(knowledge[cell]) == 1
+                ]
+                print(safe_cell)
+            else:
+                assignment.pop()
+                print("back")
+                return self.backtrack(assignment, first_rand_cell)
+
+        if self.is_win(board):
+            i, j = first_rand_cell
+            self.board[i][j] = self.knowledge[first_rand_cell].pop()
+            self.knowledge[first_rand_cell] = set()
+            self.update_knowledge()
+            return first_rand_cell
+
+        if not safe_moves:
+            if self.is_board_valid(board):
+                try:
+                    min_num = min(
+                        len(nums) for nums in knowledge.values()
+                        if len(nums)
+                    )
+                    best_moves = [
+                        cell for cell in knowledge
+                        if len(knowledge[cell]) == min_num
+                    ]
+                except ValueError:
+                    assignment.pop()
+                    print("back")
+                    return self.backtrack(assignment, first_rand_cell)
+
+                rand_cell = i, j = random.choice(best_moves)
+
+                assignment.append({
+                    "board": copy.deepcopy(board),
+                    "knowledge": copy.deepcopy(knowledge)
+                })
+
+                new_board = assignment[-1]["board"]
+                new_knowledge = assignment[-1]["knowledge"]
+                new_board[i][j] = new_knowledge[rand_cell].pop()
+                new_knowledge[rand_cell] = set()
+                self.update_knowledge(new_board, new_knowledge)
+                return self.backtrack(assignment, first_rand_cell)
         
+        if self.is_win(board):
+            i, j = first_rand_cell
+            self.board[i][j] = self.knowledge[first_rand_cell].pop()
+            self.knowledge[first_rand_cell] = set()
+            self.update_knowledge()
+            return first_rand_cell
+
