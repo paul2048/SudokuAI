@@ -155,8 +155,8 @@ def main():
                     cell = ai.make_move()
                     # If a move was made
                     if cell:
-                        for x in ai.knowledge:
-                            print(f"{x}: {ai.knowledge[x]}")
+                        # for x in ai.knowledge:
+                        #     print(f"{x}: {ai.knowledge[x]}")
                         # If the game is not won, mark the cell of the inserted number
                         if not game.is_win():
                             # Select the cell that the AI chose
@@ -168,7 +168,7 @@ def main():
                     time.sleep(.2)
                 # Check if the "New game" button was clicked
                 elif new_btn.collidepoint(game.mouse_pos):
-                    game.board = game.new_board()
+                    game = Sudoku()
                     ai = SudokuAI(game.board)
 
                 # Check if a cell or the left/right/bottom margin

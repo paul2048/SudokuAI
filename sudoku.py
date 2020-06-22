@@ -14,7 +14,7 @@ class Sudoku():
         self.board = self.new_board()
         self.initial_board = copy.deepcopy(self.board)
         self.selected_cell = None
-        self.mouse_pos = None
+        self.mouse_pos = (0, 0)
 
     def new_board(self):
         """
