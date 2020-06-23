@@ -151,20 +151,20 @@ def main():
                     time.sleep(.2)
                 # Check if the "AI move" button was clicked
                 elif ai_btn.collidepoint(game.mouse_pos):
-                    # Make a move and store the cell where the number was inserted
-                    cell = ai.make_move()
-                    # If a move was made
-                    if cell:
-                        # for x in ai.knowledge:
-                        #     print(f"{x}: {ai.knowledge[x]}")
-                        # If the game is not won, mark the cell of the inserted number
-                        if not game.is_win():
-                            # Select the cell that the AI chose
-                            game.selected_cell = cell
-                            game.mouse_pos = (
-                                BOARD_POS[0] + cell[1] * CELL_SIZE,
-                                BOARD_POS[1] + cell[0] * CELL_SIZE
-                            )
+                    # Make sure the game is not already over
+                    if not ai.is_win(game.board):
+                        # Make a move and store the cell where the number was inserted
+                        cell = ai.make_move()
+                        # If a move was made
+                        if cell:
+                            # If the game is not won, mark the cell of the inserted number
+                            if not game.is_win():
+                                # Select the cell that the AI chose
+                                game.selected_cell = cell
+                                game.mouse_pos = (
+                                    BOARD_POS[0] + cell[1] * CELL_SIZE,
+                                    BOARD_POS[1] + cell[0] * CELL_SIZE
+                                )
                     time.sleep(.2)
                 # Check if the "New game" button was clicked
                 elif new_btn.collidepoint(game.mouse_pos):

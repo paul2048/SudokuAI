@@ -156,12 +156,18 @@ class SudokuAI():
 
         return True
 
-    def is_board_valid(self, board):
+    def is_board_valid(self, board, knowledge):
         """
         """
 
         # Iterate through each row of the board
         for i, row in enumerate(board):
+            # If an empty cell has no knowledge associated with the cell
+            for j, num in enumerate(row):
+                cell = (i, j)
+                if num == 0 and len(knowledge[cell]) == 0:
+                    return False
+
             # The numbers of the i-th row (without 0s)
             row = [num for num in row if num]
             # The numbers of the i-th column (without 0s)
@@ -213,28 +219,21 @@ class SudokuAI():
                 if len(self.knowledge[cell]) == min_num
             ]
 
+            board_cpy = copy.deepcopy(self.board)
+            knowledge_cpy = copy.deepcopy(self.knowledge)
+            safe_cell, safe_num = self.backtrack(board_cpy, knowledge_cpy)
+            i, j = safe_cell
+            self.board[i][j] = safe_num
+            self.knowledge[safe_cell] = set()
+            self.update_knowledge()
+            return safe_cell
 
-            rand_cell = i, j = random.choice(best_moves)
-            assignment = [{
-                "board": copy.deepcopy(self.board),
-                "knowledge": copy.deepcopy(self.knowledge)
-            }]
-
-            return self.backtrack(assignment, rand_cell)
-
-    def backtrack(self, assignment, first_rand_cell):
+    def backtrack(self, board, knowledge, guess=(None, None)):
         """
         """
-
-        board = assignment[-1]["board"]
-        knowledge = assignment[-1]["knowledge"]
 
         if self.is_win(board):
-            i, j = first_rand_cell
-            self.board[i][j] = self.knowledge[first_rand_cell].pop()
-            self.knowledge[first_rand_cell] = set()
-            self.update_knowledge()
-            return first_rand_cell
+            return guess
 
         safe_moves = [
             cell for cell in knowledge
@@ -242,7 +241,7 @@ class SudokuAI():
         ]
 
         while safe_moves:
-            if self.is_board_valid(board):
+            if self.is_board_valid(board, knowledge):
                 safe_cell = i, j = random.choice(safe_moves)
                 board[i][j] = knowledge[safe_cell].pop()
                 self.update_knowledge(board, knowledge)
@@ -252,51 +251,37 @@ class SudokuAI():
                 ]
                 print(safe_cell)
             else:
-                assignment.pop()
-                print("back")
-                return self.backtrack(assignment, first_rand_cell)
+                return False
 
         if self.is_win(board):
-            i, j = first_rand_cell
-            self.board[i][j] = self.knowledge[first_rand_cell].pop()
-            self.knowledge[first_rand_cell] = set()
-            self.update_knowledge()
-            return first_rand_cell
+            return guess
 
         if not safe_moves:
-            if self.is_board_valid(board):
-                try:
-                    min_num = min(
-                        len(nums) for nums in knowledge.values()
-                        if len(nums)
-                    )
-                    best_moves = [
-                        cell for cell in knowledge
-                        if len(knowledge[cell]) == min_num
-                    ]
-                except ValueError:
-                    assignment.pop()
-                    print("back")
-                    return self.backtrack(assignment, first_rand_cell)
+            if self.is_board_valid(board, knowledge):
+                min_num = min(
+                    len(nums) for nums in knowledge.values()
+                    if len(nums)
+                )
+                best_moves = [
+                    cell for cell in knowledge
+                    if len(knowledge[cell]) == min_num
+                ]
 
                 rand_cell = i, j = random.choice(best_moves)
 
-                assignment.append({
-                    "board": copy.deepcopy(board),
-                    "knowledge": copy.deepcopy(knowledge)
-                })
+                for num in knowledge[rand_cell]:
+                    new_board = copy.deepcopy(board)
+                    new_knowledge = copy.deepcopy(knowledge)
+                    new_board[i][j] = num
+                    new_knowledge[rand_cell] = set()
+                    self.update_knowledge(new_board, new_knowledge)
+                    result = self.backtrack(new_board, new_knowledge, (rand_cell, num))
+                    if self.is_win(board):
+                        return (rand_cell, num)
+                    elif type(result) == tuple:
+                        return result
+            else:
+                return False
 
-                new_board = assignment[-1]["board"]
-                new_knowledge = assignment[-1]["knowledge"]
-                new_board[i][j] = new_knowledge[rand_cell].pop()
-                new_knowledge[rand_cell] = set()
-                self.update_knowledge(new_board, new_knowledge)
-                return self.backtrack(assignment, first_rand_cell)
-        
         if self.is_win(board):
-            i, j = first_rand_cell
-            self.board[i][j] = self.knowledge[first_rand_cell].pop()
-            self.knowledge[first_rand_cell] = set()
-            self.update_knowledge()
-            return first_rand_cell
-
+            return guess
