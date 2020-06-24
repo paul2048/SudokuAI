@@ -94,6 +94,10 @@ class SudokuAI():
         # When a SudokuAI object is created, initial knowledge
         # will be created
         self.update_knowledge()
+        # If the AI concluded that there are no solutions, this
+        # property will be set to `True`. When the property is `True`,
+        # the board will highlight all the mutable cells as wrong.
+        self.no_solutions = False
 
     def update_knowledge(self, board=None, knowledge=None):
         """
@@ -103,8 +107,8 @@ class SudokuAI():
         knowledge musn't be updated (while using the `get_safe_move` method). 
         """
 
-        board = board if board else self.board
-        knowledge = knowledge if knowledge else self.knowledge
+        board = board or self.board
+        knowledge = knowledge or self.knowledge
 
         # Iterate through the rows of the board
         for i, row in enumerate(board):
@@ -147,7 +151,7 @@ class SudokuAI():
         musn't be updated.
         """
 
-        board = board if board else self.board
+        board = board or self.board
 
         # Iterate through each row of the board
         for i, row in enumerate(board):
@@ -228,8 +232,15 @@ class SudokuAI():
             # that can be used for experimenting with random moves
             board_cpy = copy.deepcopy(self.board)
             knowledge_cpy = copy.deepcopy(self.knowledge)
-            # Get a safe cell and insert its number there
-            safe_cell, safe_num = self.get_safe_move(board_cpy, knowledge_cpy)
+            
+            try:
+                # Get a safe cell and insert its number there
+                safe_cell, safe_num = self.get_safe_move(board_cpy, knowledge_cpy)
+            except TypeError:
+                # The board doesn't have any solutions or the user inserted
+                # a wrong value into a cell
+                return False
+
             i, j = safe_cell
             self.board[i][j] = safe_num
             self.knowledge[safe_cell] = set()

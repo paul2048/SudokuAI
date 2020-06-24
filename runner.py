@@ -100,6 +100,21 @@ def main():
                 ), 2
             )
 
+            # If the AI found no solutions
+            if ai.no_solutions:
+                # Highlight all the mutable cells as wrong
+                for i, row in enumerate(game.initial_board):
+                    for j, num in enumerate(row):
+                        if num == 0:
+                            pygame.draw.rect(
+                                window, RED,
+                                (
+                                    BOARD_POS[0] + CELL_SIZE *
+                                    j, BOARD_POS[1] + CELL_SIZE * i,
+                                    CELL_SIZE, CELL_SIZE
+                                )
+                            )
+
             # If a cell was selected (clicked), highlight the cell
             selected_cell = game.selected_cell
             if selected_cell:
@@ -141,6 +156,7 @@ def main():
                 regular_font
             )
 
+            # Click events for the buttons
             click, _, _ = pygame.mouse.get_pressed()
             if click == 1:
                 game.mouse_pos = pygame.mouse.get_pos()
@@ -153,9 +169,9 @@ def main():
                 elif ai_btn.collidepoint(game.mouse_pos):
                     # Make sure the game is not already over
                     if not ai.is_win():
-                        # Make a move and store the cell where the number was inserted
+                        # Try to make a safe move
                         cell = ai.make_move()
-                        # If a move was made
+                        # If a safe move exists
                         if cell:
                             # If the game is not won, mark the cell of the inserted number
                             if not game.is_win():
@@ -165,6 +181,13 @@ def main():
                                     BOARD_POS[0] + cell[1] * CELL_SIZE,
                                     BOARD_POS[1] + cell[0] * CELL_SIZE
                                 )
+                        # The board doesn't have any solutions or the user inserted
+                        # a wrong value into a cell
+                        else:
+                            # Put the board in a "no solutions" state
+                            ai.no_solutions = True
+                            game.selected_cell = None
+
                     time.sleep(.2)
                 # Check if the "New game" button was clicked
                 elif new_btn.collidepoint(game.mouse_pos):
@@ -184,6 +207,8 @@ def main():
                     sys.exit()
                 # Check for key press events
                 if event.type == pygame.KEYDOWN:
+                    # Get the board out of the "no solutions" state
+                    ai.no_solutions = False
                     # Insert the key on the board if it's a number
                     game.insert_num(window, board_rect, event.unicode)
                     # Update the AI knowledge
@@ -261,9 +286,7 @@ def draw_nums(window, game, font):
     for i, row in enumerate(game.board):
         # Iterate through each number of the row
         for j, num in enumerate(row):
-            curr_num = game.board[i][j]
-
-            if curr_num != 0:
+            if num != 0:
                 # The background of the cell
                 cell_rect = pygame.Rect(
                     j * CELL_SIZE + BOARD_POS[0],
@@ -272,7 +295,7 @@ def draw_nums(window, game, font):
                 )
 
                 # Render the font and center the number inside `cell_rect`
-                styled_text = font.render(str(curr_num), True, BLACK)
+                styled_text = font.render(str(num), True, BLACK)
                 styled_text_rect = styled_text.get_rect()
                 styled_text_rect.center = cell_rect.center
 
