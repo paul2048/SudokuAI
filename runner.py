@@ -152,7 +152,7 @@ def main():
                 # Check if the "AI move" button was clicked
                 elif ai_btn.collidepoint(game.mouse_pos):
                     # Make sure the game is not already over
-                    if not ai.is_win(game.board):
+                    if not ai.is_win():
                         # Make a move and store the cell where the number was inserted
                         cell = ai.make_move()
                         # If a move was made

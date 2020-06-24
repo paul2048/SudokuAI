@@ -95,12 +95,12 @@ class SudokuAI():
         # will be created
         self.update_knowledge()
 
-    def update_knowledge(self, board=[], knowledge=[]):
+    def update_knowledge(self, board=None, knowledge=None):
         """
         Updates the knowledge of 1 or more cells by reducing the number of
-        valid numbers that can be inserted in the specfic cell.
-        The optional arguments `board` and `knowledge` are used when the
-        live board and knowledge musn't be updated (used while backtracking). 
+        valid numbers that can be inserted in the specfic cell. The optional
+        arguments `board` and `knowledge` are used when the live board and
+        knowledge musn't be updated (while using the `get_safe_move` method). 
         """
 
         board = board if board else self.board
@@ -117,7 +117,8 @@ class SudokuAI():
 
     def possible_nums(self, cell, board):
         """
-        Returns a set of possible numbers that can be inserted in `cell`
+        This method returns a set of possible numbers that can be inserted
+        in `cell` on the specified `board`.
         """
 
         i, j = cell
@@ -139,11 +140,14 @@ class SudokuAI():
 
         return set(range(1, 10)).difference(not_available_nums)
 
-    def is_win(self, board):
+    def is_win(self, board=None):
         """
         This method checks if the current state of the board represents
-        a win.
+        a win. The optional argument `board` is used when the live board
+        musn't be updated.
         """
+
+        board = board if board else self.board
 
         # Iterate through each row of the board
         for i, row in enumerate(board):
@@ -158,6 +162,12 @@ class SudokuAI():
 
     def is_board_valid(self, board, knowledge):
         """
+        This method return `True` if the board is valid, `False` otherwise
+        The board is invalid if:
+            1) There are at least 2 identical numbers in the same row,
+            column or region or
+            2) There are empty cells on the board that don't have any possible
+            numbers to insert into them (there is no knowledge about).
         """
 
         # Iterate through each row of the board
@@ -189,99 +199,114 @@ class SudokuAI():
 
     def make_move(self):
         """
+        This method makes a safe move and returns the cell in which a
+        number was inserted. Two kinds of moves can be made.
+            1) A simple safe move that consists of a cell that has only
+            one possible number or
+            2) A more complex move that involves picking random numbers
+            until a win is achieved.
         """
 
-        # The cells that have only 1 possible number
-        safe_moves = [
+        # A list of cells with 1 possible number
+        safe_cells = [
             cell for cell in self.knowledge
             if len(self.knowledge[cell]) == 1
         ]
 
         # If 1 or more safe moves are available
-        if safe_moves:
-            print("Normal move, bro........")
-            # Make a random safe move
-            safe_cell = i, j = random.choice(safe_moves)
+        if safe_cells:
+            # Get a safe cell and insert its number there
+            safe_cell = i, j = random.choice(safe_cells)
             self.board[i][j] = self.knowledge[safe_cell].pop()
+            # Update the knowledge because more safe moves can be infered
             self.update_knowledge()
+            # Return the safe cell so it can be highlighted on the board
             return safe_cell
         # If no safe moves are available
         else:
-            print("RISKY MOVE!!!!!!!!!!!!!")
-            # Get the cells with the smallest amount of possible numbers
-            # that a cell on the current board can have
-            min_num = min(
-                len(nums) for nums in self.knowledge.values()
-                if len(nums)
-            )
-            best_moves = [
-                cell for cell in self.knowledge
-                if len(self.knowledge[cell]) == min_num
-            ]
-
+            # Create a copy of the current game's board and knowledge
+            # that can be used for experimenting with random moves
             board_cpy = copy.deepcopy(self.board)
             knowledge_cpy = copy.deepcopy(self.knowledge)
-            safe_cell, safe_num = self.backtrack(board_cpy, knowledge_cpy)
+            # Get a safe cell and insert its number there
+            safe_cell, safe_num = self.get_safe_move(board_cpy, knowledge_cpy)
             i, j = safe_cell
             self.board[i][j] = safe_num
             self.knowledge[safe_cell] = set()
+            # Update the knowledge because more safe moves can be infered
             self.update_knowledge()
+            # Return the safe cell so it can be highlighted on the board
             return safe_cell
 
-    def backtrack(self, board, knowledge, guess=(None, None)):
+    def get_safe_move(self, board, knowledge, guess=None):
         """
+        This is a recursive function that creates different paths by
+        choosing random numbers.
+        It's used when there are no simple safe moves left. It can return:
+            1) `False` if a win state was not detected on the path or
+            2) A tuple that consists of a cell and the safe number to
+            insert into that cell if a win state was found.
         """
 
-        if self.is_win(board):
-            return guess
-
-        safe_moves = [
+        # A list of cells with 1 possible number
+        safe_cells = [
             cell for cell in knowledge
             if len(knowledge[cell]) == 1
         ]
 
-        while safe_moves:
+        # Iterate through the safe cells
+        while safe_cells:
+            # Make sure the board is valid, since any previous random
+            # moves might be wrong
             if self.is_board_valid(board, knowledge):
-                safe_cell = i, j = random.choice(safe_moves)
+                # Get a safe cell and insert its number there
+                safe_cell = i, j = random.choice(safe_cells)
                 board[i][j] = knowledge[safe_cell].pop()
+                # Update the knowledge because more safe moves can be infered
                 self.update_knowledge(board, knowledge)
-                safe_moves = [
+                
+                # Get a list of new safe cells
+                safe_cells = [
                     cell for cell in knowledge
                     if len(knowledge[cell]) == 1
                 ]
-                print(safe_cell)
             else:
                 return False
 
+        # Return a safe (previously random) cell and its number
         if self.is_win(board):
             return guess
 
-        if not safe_moves:
-            if self.is_board_valid(board, knowledge):
-                min_num = min(
-                    len(nums) for nums in knowledge.values()
-                    if len(nums)
-                )
-                best_moves = [
-                    cell for cell in knowledge
-                    if len(knowledge[cell]) == min_num
-                ]
+        # If the board is still valid after the last safe move made
+        if self.is_board_valid(board, knowledge):
+            # Get the cells with the smallest amount of possible numbers
+            # that a cell on the current board can have
+            min_num = min(
+                len(nums) for nums in knowledge.values()
+                if len(nums)
+            )
+            best_moves = [
+                cell for cell in knowledge
+                if len(knowledge[cell]) == min_num
+            ]
 
-                rand_cell = i, j = random.choice(best_moves)
+            # Get a random cell with the minimum number of possible numbers
+            rand_cell = i, j = random.choice(best_moves)
 
-                for num in knowledge[rand_cell]:
-                    new_board = copy.deepcopy(board)
-                    new_knowledge = copy.deepcopy(knowledge)
-                    new_board[i][j] = num
-                    new_knowledge[rand_cell] = set()
-                    self.update_knowledge(new_board, new_knowledge)
-                    result = self.backtrack(new_board, new_knowledge, (rand_cell, num))
-                    if self.is_win(board):
-                        return (rand_cell, num)
-                    elif type(result) == tuple:
-                        return result
-            else:
-                return False
+            # Iterate through each of the `rand_cell`'s possible numbers
+            for num in knowledge[rand_cell]:
+                # Create a copy of the current board and knowledge
+                new_board = copy.deepcopy(board)
+                new_knowledge = copy.deepcopy(knowledge)
+                # Insert the current number on new board and update the new knowledge
+                new_board[i][j] = num
+                new_knowledge[rand_cell] = set()
+                self.update_knowledge(new_board, new_knowledge)
+                # Try to get a safe move of the new board and knowledge
+                result = self.get_safe_move(new_board, new_knowledge, (rand_cell, num))
 
-        if self.is_win(board):
-            return guess
+                # If the returned result is a tuple return the result
+                if type(result) == tuple:
+                    return result
+        else:
+            return False
