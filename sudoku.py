@@ -251,6 +251,10 @@ class SudokuAI():
     
     def generate_board(self, board, knowledge):
         """
+        This method generates and returns valid random boards which have
+        every cell filled. It fills random cells with random possible numbers
+        until a valid filled board is created. If an invalid board was created,
+        a new random path will will be taken.
         """
         
         initial_board = copy.deepcopy(board)
@@ -327,6 +331,7 @@ class Sudoku():
         """
 
         nums = sum(BOARD, [])
+        # Makes sure the board has only numbers from 0 to 9
         is_board_valid = all(num in range(10) for num in nums)
 
         # If the predefined board from the setting is valid and not empty
@@ -347,11 +352,15 @@ class Sudoku():
 
             for _ in range(cells_to_empty):
                 while True:
+                    # Pick a random cell and insert 0 into it
                     i, j = (random.randint(0, 8), random.randint(0, 8))
                     prev_num = board[i][j]
                     board[i][j] = 0
+
+                    # If the random cell wasn't already emptied
                     if prev_num != 0:
                         break
+
             return board
 
     def get_cell(self, board_rect):

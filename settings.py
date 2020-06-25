@@ -36,7 +36,7 @@ SONG_PATH = "assets/sounds/instructions.mp3"
 SONG = SONG_PATH
 
 # Play with a predefined board if you want. If a number
-# between 1 and 9 is added below, `BOARD` will be used.
+# from 1 to 9 is added below, `BOARD` will be used.
 BOARD = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
