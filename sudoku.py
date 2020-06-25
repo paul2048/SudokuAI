@@ -3,83 +3,6 @@ import random
 
 from settings import *
 
-
-class Sudoku():
-    """
-    Sudoku game representation
-    """
-
-    def __init__(self):
-
-        self.board = self.new_board()
-        self.initial_board = copy.deepcopy(self.board)
-        self.selected_cell = None
-        self.mouse_pos = (0, 0)
-
-    def new_board(self):
-        """
-        """
-
-        return copy.deepcopy(board)
-
-    def get_cell(self, board_rect):
-        """
-        If the mouse was clicked outside the board, the method returns
-        `False`, else it returns the position of the clicked cell (e.g:
-        `(8, 8)` will be returned for clicking the last cell). `board_rect`
-        is a pygame `Rect` with the size and position of the board.
-        """
-
-        # If the clicked coordonates are inside the board
-        if board_rect.collidepoint(self.mouse_pos):
-            # Return the position of the clicked cell
-            return (
-                (self.mouse_pos[1] - BOARD_POS[1]) // CELL_SIZE,
-                (self.mouse_pos[0] - BOARD_POS[0]) // CELL_SIZE
-            )
-
-        return False
-
-    def insert_num(self, window, board_rect, key):
-        """
-        This method checks if the pressed key is a number, and if so,
-        the number will be inserted in the selected cell.
-        """
-
-        # Get the click cell position (e.g: `(8, 8)` is the last cell)
-        i, j = self.get_cell(board_rect)
-
-        # Check if the `(i, j)` is a valid board position
-        if self.initial_board[i][j] == 0:
-            # If the key is a number, add it to the board
-            try:
-                int(key)
-                self.board[i][j] = int(key)
-                # Check for a win
-                self.is_win()
-            except:
-                pass
-    
-    def is_win(self):
-        """
-        This method checks if the current state of the board represents
-        a win. If it's a win, "lock" the board
-        """
-
-        # Iterate through each row of the board
-        for i, row in enumerate(self.board):
-            # The `i`-th column
-            col = [row2[i] for row2 in self.board]
-
-            # Check if the `i`-th row and column are valid
-            if not (set(row) == set(col) == set(range(1, 10))):
-                return False
-
-        # Mark the victory by "locking" every cell
-        self.initial_board = self.board
-        return True
-
-
 class SudokuAI():
     """
     Sudoku game player
@@ -170,7 +93,7 @@ class SudokuAI():
 
     def is_board_valid(self, board, knowledge):
         """
-        This method return `True` if the board is valid, `False` otherwise
+        This method return `True` if the board is valid, `False` otherwise.
         The board is invalid if:
             1) There are at least 2 identical numbers in the same row,
             column or region or
@@ -193,7 +116,7 @@ class SudokuAI():
             # The numbers of the i-th region (without 0s)
             ri, rj = (i * 3, (i // 3) * 3)
             reg = [
-                num for row2 in self.board[ri:ri+3]
+                num for row2 in board[ri:ri+3]
                 for num in row2[rj:rj+3] if num
             ]
 
@@ -236,7 +159,7 @@ class SudokuAI():
             # that can be used for experimenting with random moves
             board_cpy = copy.deepcopy(self.board)
             knowledge_cpy = copy.deepcopy(self.knowledge)
-            
+
             try:
                 # Get a safe cell and insert its number there
                 safe_cell, safe_num = self.get_safe_move(board_cpy, knowledge_cpy)
@@ -255,8 +178,8 @@ class SudokuAI():
 
     def get_safe_move(self, board, knowledge, guess=None):
         """
-        This is a recursive function that creates different paths by
-        choosing random numbers.
+        This is a recursive function that creates different decision paths
+        by choosing random numbers.
         It's used when there are no simple safe moves left. It can return:
             1) `False` if a win state was not detected on the path or
             2) A tuple that consists of a cell and the safe number to
@@ -279,7 +202,7 @@ class SudokuAI():
                 board[i][j] = knowledge[safe_cell].pop()
                 # Update the knowledge because more safe moves can be infered
                 self.update_knowledge(board, knowledge)
-                
+
                 # Get a list of new safe cells
                 safe_cells = [
                     cell for cell in knowledge
@@ -300,13 +223,13 @@ class SudokuAI():
                 len(nums) for nums in knowledge.values()
                 if len(nums)
             )
-            best_moves = [
+            best_cells = [
                 cell for cell in knowledge
                 if len(knowledge[cell]) == min_num
             ]
 
             # Get a random cell with the minimum number of possible numbers
-            rand_cell = i, j = random.choice(best_moves)
+            rand_cell = i, j = random.choice(best_cells)
 
             # Iterate through each of the `rand_cell`'s possible numbers
             for num in knowledge[rand_cell]:
@@ -325,3 +248,165 @@ class SudokuAI():
                     return result
         else:
             return False
+    
+    def generate_board(self, board, knowledge):
+        """
+        """
+        
+        initial_board = copy.deepcopy(board)
+        initial_knowledge = copy.deepcopy(knowledge)
+
+        while True:
+            # A list of cells with 1 possible number
+            safe_cells = [
+                cell for cell in knowledge
+                if len(knowledge[cell]) == 1
+            ]
+
+            # Iterate through the safe cells
+            while safe_cells:
+                # Get a safe cell and insert its number there
+                safe_cell = i, j = random.choice(safe_cells)
+                board[i][j] = knowledge[safe_cell].pop()
+                # Update the knowledge because more safe moves can be infered
+                self.update_knowledge(board, knowledge)
+
+                # Get a list of new safe cells
+                safe_cells = [
+                    cell for cell in knowledge
+                    if len(knowledge[cell]) == 1
+                ]
+
+            if self.is_board_valid(board, knowledge):
+            # Return a safe (previously random) cell and its number
+                if self.is_win(board):
+                    return board
+
+                # Get the cells with the smallest amount of possible numbers
+                # that a cell on the current board can have
+                min_num = min(
+                    len(nums) for nums in knowledge.values()
+                    if len(nums)
+                )
+                best_moves = [
+                    cell for cell in knowledge
+                    if len(knowledge[cell]) == min_num
+                ]
+
+                # Get a random cell with the minimum number of possible numbers
+                rand_cell = i, j = random.choice(best_moves)
+
+                # Iterate through each of the `rand_cell`'s possible numbers
+                for num in knowledge[rand_cell]:
+                    # Insert the current number on new board and update the new knowledge
+                    board[i][j] = num
+                    knowledge[rand_cell] = set()
+                    self.update_knowledge(board, knowledge)
+            else:
+                board = copy.deepcopy(initial_board)
+                knowledge = copy.deepcopy(initial_knowledge)
+
+
+class Sudoku():
+    """
+    Sudoku game representation
+    """
+
+    def __init__(self, difficulty=2):
+
+        # 1 means easy, 2 means medium, and 3 means hard 
+        self.difficulty = difficulty
+        self.board = self.new_board()
+        self.initial_board = copy.deepcopy(self.board)
+        self.selected_cell = None
+        self.mouse_pos = (0, 0)
+
+    def new_board(self):
+        """
+        This method uses the `SudokuAI` class to generate a random board.
+        """
+
+        nums = sum(BOARD, [])
+        is_board_valid = all(num in range(10) for num in nums)
+
+        # If the predefined board from the setting is valid and not empty
+        if any(num != 0 for num in nums) and is_board_valid:
+            # Use the predefined board
+            return copy.deepcopy(BOARD)
+        else:
+            board = [[0 for _ in range(9)] for _ in range(9)]
+            ai = SudokuAI(board)
+            board = ai.generate_board(ai.board, ai.knowledge)
+            # The number of cells to be emptied from the board
+            cells_to_empty = (self.difficulty + 4) ** 2 + random.randint(0, 2)
+
+            # Makes sure the number of cells to be removed isn't larger than
+            # the total number of cells on the board
+            if cells_to_empty > 81:
+                cells_to_empty = 81
+
+            for _ in range(cells_to_empty):
+                while True:
+                    i, j = (random.randint(0, 8), random.randint(0, 8))
+                    prev_num = board[i][j]
+                    board[i][j] = 0
+                    if prev_num != 0:
+                        break
+            return board
+
+    def get_cell(self, board_rect):
+        """
+        If the mouse was clicked outside the board, the method returns
+        `False`, else it returns the position of the clicked cell (e.g:
+        `(8, 8)` will be returned for clicking the last cell). `board_rect`
+        is a pygame `Rect` with the size and position of the board.
+        """
+
+        # If the clicked coordonates are inside the board
+        if board_rect.collidepoint(self.mouse_pos):
+            # Return the position of the clicked cell
+            return (
+                (self.mouse_pos[1] - BOARD_POS[1]) // CELL_SIZE,
+                (self.mouse_pos[0] - BOARD_POS[0]) // CELL_SIZE
+            )
+
+        return False
+
+    def insert_num(self, window, board_rect, key):
+        """
+        This method checks if the pressed key is a number, and if so,
+        the number will be inserted in the selected cell.
+        """
+
+        # Get the click cell position (e.g: `(8, 8)` is the last cell)
+        i, j = self.get_cell(board_rect)
+
+        # Check if the `(i, j)` is a valid board position
+        if self.initial_board[i][j] == 0:
+            # If the key is a number, add it to the board
+            try:
+                int(key)
+                self.board[i][j] = int(key)
+                # Check for a win
+                self.is_win()
+            except:
+                pass
+    
+    def is_win(self):
+        """
+        This method checks if the current state of the board represents
+        a win. If it's a win, "lock" the board
+        """
+
+        # Iterate through each row of the board
+        for i, row in enumerate(self.board):
+            # The `i`-th column
+            col = [row2[i] for row2 in self.board]
+
+            # Check if the `i`-th row and column are valid
+            if not (set(row) == set(col) == set(range(1, 10))):
+                return False
+
+        # Mark the victory by "locking" every cell
+        self.initial_board = self.board
+        return True

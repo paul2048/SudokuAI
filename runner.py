@@ -23,9 +23,10 @@ def main():
     icon = pygame.image.load("assets/images/sudoku.png")
     pygame.display.set_icon(icon)
 
+    # Buttons used for dark and light modes
     SUN = pygame.image.load("assets/images/sun.png")
     MOON = pygame.image.load("assets/images/moon.png")
-    DARK_MODE_POS = (32, 32)
+    MODE_BTN_POS = (32, 32)
 
     # Play the music
     if SONG:
@@ -84,9 +85,9 @@ def main():
 
             # Disply the moon/sun image (turn on/off the dark mode)
             if DARK_MODE:
-                dark_mode_btn = window.blit(SUN, DARK_MODE_POS)
+                dark_mode_btn = window.blit(SUN, MODE_BTN_POS)
             else:
-                dark_mode_btn = window.blit(MOON, DARK_MODE_POS)
+                dark_mode_btn = window.blit(MOON, MODE_BTN_POS)
 
             click, _, _ = pygame.mouse.get_pressed()
             if click == 1:
