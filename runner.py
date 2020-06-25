@@ -103,17 +103,7 @@ def main():
             # If the AI found no solutions
             if ai.no_solutions:
                 # Highlight all the mutable cells as wrong
-                for i, row in enumerate(game.initial_board):
-                    for j, num in enumerate(row):
-                        if num == 0:
-                            pygame.draw.rect(
-                                window, RED,
-                                (
-                                    BOARD_POS[0] + CELL_SIZE *
-                                    j, BOARD_POS[1] + CELL_SIZE * i,
-                                    CELL_SIZE, CELL_SIZE
-                                )
-                            )
+                draw_wrong(window, game)
 
             # If a cell was selected (clicked), highlight the cell
             selected_cell = game.selected_cell
@@ -173,16 +163,15 @@ def main():
                         cell = ai.make_move()
                         # If a safe move exists
                         if cell:
-                            # If the game is not won, mark the cell of the inserted number
                             if not game.is_win():
-                                # Select the cell that the AI chose
+                                # Mark the cell of the inserted number
                                 game.selected_cell = cell
                                 game.mouse_pos = (
                                     BOARD_POS[0] + cell[1] * CELL_SIZE,
                                     BOARD_POS[1] + cell[0] * CELL_SIZE
                                 )
-                        # The board doesn't have any solutions or the user inserted
-                        # a wrong value into a cell
+                        # If the board doesn't have any solutions or the user
+                        # inserted a wrong value into a cell
                         else:
                             # Put the board in a "no solutions" state
                             ai.no_solutions = True
@@ -251,6 +240,29 @@ def draw_vh_lines(window):
             1 if x % 3 != 0 else 2
         )
 
+def draw_wrong(window, game):
+    """
+    This function highlights all the mutable cells as wrong.
+    It's called when:
+        1) The user made a wrong move on the board, and then the user
+        uses the AI button and the AI finds out that there is no solution.
+        2) The board had no solutions from the beginning.
+    """
+
+    # Iterate through each row of the board
+    for i, row in enumerate(game.initial_board):
+        # Iterate through each number of the row
+        for j, num in enumerate(row):
+            if num == 0:
+                # Draw a red background for the current cell
+                pygame.draw.rect(
+                    window, RED,
+                    (
+                        BOARD_POS[0] + CELL_SIZE * j,
+                        BOARD_POS[1] + CELL_SIZE * i,
+                        CELL_SIZE, CELL_SIZE
+                    )
+                )
 
 def draw_btn(window, pos, size, btn_color, text, text_color, font):
     """

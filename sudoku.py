@@ -114,10 +114,14 @@ class SudokuAI():
         for i, row in enumerate(board):
             # Iterate through each number of the row
             for j, num in enumerate(row):
+                cell = (i, j)
                 # Add knowledge only to the empty cells
                 if board[i][j] == 0:
-                    cell = (i, j)
                     knowledge[cell] = self.possible_nums(cell, board)
+                # If the cell is not empty but there is knowledge.
+                # This will occur when the user made a wrong move.
+                elif knowledge:
+                    knowledge[cell] = set()
 
     def possible_nums(self, cell, board):
         """
