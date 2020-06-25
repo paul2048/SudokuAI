@@ -23,10 +23,14 @@ def main():
     icon = pygame.image.load("assets/images/sudoku.png")
     pygame.display.set_icon(icon)
 
+    SUN = pygame.image.load("assets/images/sun.png")
+    MOON = pygame.image.load("assets/images/moon.png")
+    DARK_MODE_POS = (32, 32)
+
     # Play the music
-    if SONG_PATH:
+    if SONG:
         pygame.mixer.init()
-        pygame.mixer.music.load(SONG_PATH)
+        pygame.mixer.music.load(SONG)
         pygame.mixer.music.play(-1, 0.0)
 
     # Show instructions initially
@@ -37,7 +41,7 @@ def main():
 
 
     while True:
-        window.fill(WHITE)
+        window.fill(THEME_COLOR_1)
 
         if instructions:
             for event in pygame.event.get():
@@ -51,20 +55,12 @@ def main():
                 window,
                 (WIDTH / 4, (3 / 4) * HEIGHT),
                 (WIDTH / 2, 50),
-                BLACK, "Play Game", WHITE,
+                THEME_COLOR_2, "Play Game", THEME_COLOR_1,
                 md_bmjapan_font
             )
 
-            # Check if play button was clicked
-            click, _, _ = pygame.mouse.get_pressed()
-            if click == 1:
-                game.mouse_pos = pygame.mouse.get_pos()
-                if play_btn.collidepoint(game.mouse_pos):
-                    instructions = False
-                    time.sleep(.3)
-
             # Render the title
-            title = lg_bmjapan_font.render("SudokuAI", True, BLACK)
+            title = lg_bmjapan_font.render("SudokuAI", True, THEME_COLOR_2)
             titleRect = title.get_rect()
             titleRect.center = (WIDTH / 2, 50)
             window.blit(title, titleRect)
@@ -81,10 +77,28 @@ def main():
             for i, rule in enumerate(rules):
                 # Iterate over the segments of the current rule
                 for j, rule_seg in enumerate(rule):
-                    rule_seg = regular_font.render(rule_seg, True, BLACK)
+                    rule_seg = regular_font.render(rule_seg, True, THEME_COLOR_2)
                     rule_rect = rule_seg.get_rect()
                     rule_rect.center = (WIDTH / 2, 125 + (i * 60) + (j * 25))
                     window.blit(rule_seg, rule_rect)
+
+            # Disply the moon/sun image (turn on/off the dark mode)
+            if DARK_MODE:
+                dark_mode_btn = window.blit(SUN, DARK_MODE_POS)
+            else:
+                dark_mode_btn = window.blit(MOON, DARK_MODE_POS)
+
+            click, _, _ = pygame.mouse.get_pressed()
+            if click == 1:
+                game.mouse_pos = pygame.mouse.get_pos()
+                # Check if play button was clicked
+                if play_btn.collidepoint(game.mouse_pos):
+                    instructions = False
+                    time.sleep(.3)
+                # If the moon/sun was clicked
+                if dark_mode_btn.collidepoint(game.mouse_pos):
+                    update_theme()
+                    time.sleep(.2)
 
             # Unpause the music
             pygame.mixer.music.unpause()
@@ -93,7 +107,7 @@ def main():
         else:
             # Draw the outline of the board
             board_rect = pygame.draw.rect(
-                window, BLACK,
+                window, THEME_COLOR_2,
                 (
                     BOARD_POS[0], BOARD_POS[1],
                     WIDTH - BOARD_POS[0] * 2, HEIGHT - BOARD_POS[0] * 2
@@ -124,7 +138,7 @@ def main():
                 window,
                 (BOARD_POS[0] + 15, (BOARD_POS[1] - 50) / 2),
                 (WIDTH / 5, 50),
-                BLACK, "Exit game", WHITE,
+                THEME_COLOR_2, "Exit game", THEME_COLOR_1,
                 regular_font
             )
 
@@ -142,7 +156,7 @@ def main():
                 window,
                 (BOARD_POS[0] + BOARD_SIZE / 1.5 + 15, (BOARD_POS[1] - 50) / 2),
                 (WIDTH / 5, 50),
-                RED, "New game", WHITE,
+                RED, "New game", THEME_COLOR_1,
                 regular_font
             )
 
@@ -224,7 +238,7 @@ def draw_vh_lines(window):
     for x in range(9):
         # Draw vertical lines
         pygame.draw.line(
-            window, BLACK,
+            window, THEME_COLOR_2,
             (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1]),
             (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1] + BOARD_SIZE),
             # The 3rd, 6th and 9th lines are thicker
@@ -233,7 +247,7 @@ def draw_vh_lines(window):
 
         # Draw horizontal lines
         pygame.draw.line(
-            window, BLACK,
+            window, THEME_COLOR_2,
             (BOARD_POS[0], BOARD_POS[1] + (x * CELL_SIZE)),
             (BOARD_POS[0] + BOARD_SIZE, BOARD_POS[1] + (x * CELL_SIZE)),
             # The 3rd, 6th and 9th lines are thicker
@@ -307,7 +321,7 @@ def draw_nums(window, game, font):
                 )
 
                 # Render the font and center the number inside `cell_rect`
-                styled_text = font.render(str(num), True, BLACK)
+                styled_text = font.render(str(num), True, THEME_COLOR_2)
                 styled_text_rect = styled_text.get_rect()
                 styled_text_rect.center = cell_rect.center
 
@@ -320,12 +334,37 @@ def draw_nums(window, game, font):
 
     # Fixes the overlaping of the initial cells on the board's outline
     pygame.draw.rect(
-        window, BLACK,
+        window, THEME_COLOR_2,
         (
             BOARD_POS[0], BOARD_POS[1],
             WIDTH - BOARD_POS[0] * 2, HEIGHT - BOARD_POS[0] * 2
         ), 2
     )
+
+
+def update_theme():
+    """
+    This function updates the theme to:
+        1) the dark mode if the moon image was clicked
+        2) the light mode if the sun image was clicked 
+    """
+
+    # Use the global variables from `settings.py`
+    global DARK_MODE, THEME_COLOR_1, THEME_COLOR_2
+    global SELECTED_CELL_COLOR, INITIAL_CELL_COLOR
+
+    DARK_MODE = not DARK_MODE
+
+    if DARK_MODE:
+        THEME_COLOR_1 = BLACK
+        THEME_COLOR_2 = WHITE
+        SELECTED_CELL_COLOR = DARK_GRAY
+        INITIAL_CELL_COLOR = DARK_SLATE_GRAY
+    else:
+        THEME_COLOR_1 = WHITE
+        THEME_COLOR_2 = BLACK
+        SELECTED_CELL_COLOR = ANTIQUE_WHITE
+        INITIAL_CELL_COLOR = LIGHT_GRAY
 
 
 if __name__ == "__main__":
