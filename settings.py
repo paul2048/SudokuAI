@@ -32,7 +32,7 @@ else:
     INITIAL_CELL_COLOR = LIGHT_GRAY
 
 # The path of the song in the instructions menu
-SONG_PATH = "assets/sounds/instructions.mp3"
+SONG_PATH = "assets/sounds/menu.mp3"
 SONG = SONG_PATH
 
 # Play with a predefined board if you want. If a number

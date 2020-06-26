@@ -264,12 +264,14 @@ def main():
                     sys.exit()
                 # Check for key press events
                 if event.type == pygame.KEYDOWN:
-                    # Get the board out of the "no solutions" state
-                    ai.no_solutions = False
-                    # Insert the key on the board if it's a number
-                    game.insert_num(window, board_rect, event.unicode)
-                    # Update the AI knowledge
-                    ai.update_knowledge()
+                    # Make sure a cell is selected before inserting
+                    if board_rect.collidepoint(game.mouse_pos):
+                        # Get the board out of the "no solutions" state
+                        ai.no_solutions = False
+                        # Insert the key on the board if it's a number
+                        game.insert_num(window, board_rect, event.unicode)
+                        # Update the AI knowledge
+                        ai.update_knowledge()
 
             # Draw the numbers on the board
             draw_nums(window, game, nums_font)
