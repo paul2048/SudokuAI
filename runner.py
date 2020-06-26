@@ -15,7 +15,9 @@ def main():
     BMJAPAN = "assets/fonts/BMjapan.ttf"
     lg_bmjapan_font = pygame.font.Font(BMJAPAN, 42)
     md_bmjapan_font = pygame.font.Font(BMJAPAN, 32)
-    regular_font = pygame.font.SysFont("Arial", 24)
+    sm_bmjapan_font = pygame.font.Font(BMJAPAN, 24)
+    md_regular_font = pygame.font.SysFont("Arial", 24)
+    sm_regular_font = pygame.font.SysFont("Arial", 19)
     nums_font = pygame.font.SysFont("Arial", 24)
 
     # Set window title and window icon
@@ -54,17 +56,52 @@ def main():
             # Play game button
             play_btn = draw_btn(
                 window,
-                (WIDTH / 4, (3 / 4) * HEIGHT),
+                (WIDTH / 4, HEIGHT - 75),
                 (WIDTH / 2, 50),
                 THEME_COLOR_2, "Play Game", THEME_COLOR_1,
                 md_bmjapan_font
             )
 
+            # The horizontal center of the medium mode button
+            medium_btn_center = play_btn.center[0] - (WIDTH / 5) / 2
+
+            easy_mode_btn = draw_btn(
+                window,
+                (medium_btn_center - 150, HEIGHT - 150),
+                (WIDTH / 5, 50),
+                DARK_SLATE_GRAY if game.difficulty == 1 else THEME_COLOR_2,
+                "Easy", THEME_COLOR_1, sm_bmjapan_font
+            )
+
+            medium_mode_btn = draw_btn(
+                window,
+                (medium_btn_center, HEIGHT - 150),
+                (WIDTH / 5, 50),
+                DARK_SLATE_GRAY if game.difficulty == 2 else THEME_COLOR_2,
+                "Medium", THEME_COLOR_1, sm_bmjapan_font
+            )
+
+            hard_mode_btn = draw_btn(
+                window,
+                (medium_btn_center + 150, HEIGHT - 150),
+                (WIDTH / 5, 50),
+                DARK_SLATE_GRAY if game.difficulty == 3 else THEME_COLOR_2,
+                "Hard", THEME_COLOR_1, sm_bmjapan_font
+            )
+
+            # Changing difficulty warning
+            warn_msg = "Warning! Changing the difficulty will delete your progress."
+            warn = sm_regular_font.render(warn_msg, True, RED)
+            warn_rect = warn.get_rect()
+            warn_rect.center = (WIDTH / 2, HEIGHT - 175)
+            window.blit(warn, warn_rect)
+
+
             # Render the title
             title = lg_bmjapan_font.render("SudokuAI", True, THEME_COLOR_2)
-            titleRect = title.get_rect()
-            titleRect.center = (WIDTH / 2, 50)
-            window.blit(title, titleRect)
+            title_rect = title.get_rect()
+            title_rect.center = (WIDTH / 2, 50)
+            window.blit(title, title_rect)
 
             rules = [
                 ["Sudoku is played over a 9x9 grid, divided to", "3x3 sub grids called \"regions\"."],
@@ -78,7 +115,7 @@ def main():
             for i, rule in enumerate(rules):
                 # Iterate over the segments of the current rule
                 for j, rule_seg in enumerate(rule):
-                    rule_seg = regular_font.render(rule_seg, True, THEME_COLOR_2)
+                    rule_seg = md_regular_font.render(rule_seg, True, THEME_COLOR_2)
                     rule_rect = rule_seg.get_rect()
                     rule_rect.center = (WIDTH / 2, 125 + (i * 60) + (j * 25))
                     window.blit(rule_seg, rule_rect)
@@ -96,9 +133,25 @@ def main():
                 if play_btn.collidepoint(game.mouse_pos):
                     instructions = False
                     time.sleep(.3)
+
+                # If one of difficulty buttons was clicked. Make sure to
+                # not create a a new game if the difficulty wasn't changed.
+                elif easy_mode_btn.collidepoint(game.mouse_pos):
+                    if game.difficulty != 1:
+                        game = Sudoku(difficulty=1)
+                        ai = SudokuAI(game.board)
+                elif medium_mode_btn.collidepoint(game.mouse_pos):
+                    if game.difficulty != 2:
+                        game = Sudoku(difficulty=2)
+                        ai = SudokuAI(game.board)
+                elif hard_mode_btn.collidepoint(game.mouse_pos):
+                    if game.difficulty != 3:
+                        game = Sudoku(difficulty=3)
+                        ai = SudokuAI(game.board)
+
                 # If the moon/sun was clicked
-                if dark_mode_btn.collidepoint(game.mouse_pos):
-                    update_theme()
+                elif dark_mode_btn.collidepoint(game.mouse_pos):
+                    toggle_theme()
                     time.sleep(.2)
 
             # Unpause the music
@@ -140,7 +193,7 @@ def main():
                 (BOARD_POS[0] + 15, (BOARD_POS[1] - 50) / 2),
                 (WIDTH / 5, 50),
                 THEME_COLOR_2, "Exit game", THEME_COLOR_1,
-                regular_font
+                md_regular_font
             )
 
             # AI move button
@@ -149,7 +202,7 @@ def main():
                 (BOARD_POS[0] + BOARD_SIZE / 3 + 15, (BOARD_POS[1] - 50) / 2),
                 (WIDTH / 5, 50),
                 GREEN, "AI move", BLACK,
-                regular_font
+                md_regular_font
             )
 
             # New game button
@@ -158,7 +211,7 @@ def main():
                 (BOARD_POS[0] + BOARD_SIZE / 1.5 + 15, (BOARD_POS[1] - 50) / 2),
                 (WIDTH / 5, 50),
                 RED, "New game", THEME_COLOR_1,
-                regular_font
+                md_regular_font
             )
 
             # Click events for the buttons
@@ -233,7 +286,7 @@ def main():
 
 def draw_vh_lines(window):
     """
-    This functionDraws the vertical and horizontal lines of the sudoku board.
+    This function draws the vertical and horizontal lines of the sudoku board.
     """
 
     for x in range(9):
@@ -243,7 +296,7 @@ def draw_vh_lines(window):
             (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1]),
             (BOARD_POS[0] + (x * CELL_SIZE), BOARD_POS[1] + BOARD_SIZE),
             # The 3rd, 6th and 9th lines are thicker
-            1 if x % 3 != 0 else 2
+            1 if x % 3 != 0 else 3
         )
 
         # Draw horizontal lines
@@ -252,7 +305,7 @@ def draw_vh_lines(window):
             (BOARD_POS[0], BOARD_POS[1] + (x * CELL_SIZE)),
             (BOARD_POS[0] + BOARD_SIZE, BOARD_POS[1] + (x * CELL_SIZE)),
             # The 3rd, 6th and 9th lines are thicker
-            1 if x % 3 != 0 else 2
+            1 if x % 3 != 0 else 3
         )
 
 def draw_wrong(window, game):
@@ -343,7 +396,7 @@ def draw_nums(window, game, font):
     )
 
 
-def update_theme():
+def toggle_theme():
     """
     This function updates the theme to:
         1) the dark mode if the moon image was clicked

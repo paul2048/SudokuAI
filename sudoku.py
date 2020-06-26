@@ -343,7 +343,7 @@ class Sudoku():
             ai = SudokuAI(board)
             board = ai.generate_board(ai.board, ai.knowledge)
             # The number of cells to be emptied from the board
-            cells_to_empty = (self.difficulty + 4) ** 2 + random.randint(0, 2)
+            cells_to_empty = (self.difficulty + 4) ** 2 + random.randint(1, 3)
 
             # Makes sure the number of cells to be removed isn't larger than
             # the total number of cells on the board
