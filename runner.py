@@ -17,7 +17,7 @@ def main():
     md_bmjapan_font = pygame.font.Font(BMJAPAN, 32)
     sm_bmjapan_font = pygame.font.Font(BMJAPAN, 24)
     md_regular_font = pygame.font.SysFont("Arial", 24)
-    sm_regular_font = pygame.font.SysFont("Arial", 19)
+    sm_regular_font = pygame.font.SysFont("Arial", 20)
     nums_font = pygame.font.SysFont("Arial", 24)
 
     # Set window title and window icon
