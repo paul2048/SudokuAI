@@ -34,7 +34,8 @@ def main():
     if SONG:
         pygame.mixer.init()
         pygame.mixer.music.load(SONG)
-        pygame.mixer.music.play(-1, 0.0)
+        pygame.mixer.music.set_volume(0.2)
+        pygame.mixer.music.play(-1, 0.0, 2000)
 
     # Show instructions initially
     instructions = True
