@@ -1,5 +1,5 @@
 # SudokuAI
-SudokuAI is a sudoku game that has the ability to solve any valid sudoku board by using knowledge.  
+SudokuAI is a sudoku game that has the ability to solve any valid sudoku board by using knowledge and trial and error.
 
 ![SudokuAI](assets/images/preview.png)
 
