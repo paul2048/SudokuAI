@@ -45,8 +45,10 @@ BOARD = [
 ```
 The number 0 represents an empty cell, and each 0 can be replace with a number from 1 to 9.
 
-## Requirements
-To install the required modules use the following command in the project directory: `pip install -r requirements.txt`
+## How to run
+Make sure you have Python 3 installed on your machine.  
+To install the required modules, use the `pip install -r requirements.txt` command in the project directory.  
+After the instalation was successful, run `python runner.py`.
 
 ## Music
 Eric Skiff - Underclocked
